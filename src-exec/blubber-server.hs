@@ -15,6 +15,10 @@ import Control.Arrow
   (>>>),
   second,
   )
+import Data.Function
+  (
+  (&),
+  )
 import Control.Concurrent
   (
   forkIO,
@@ -218,11 +222,10 @@ step wp wi wo is w cs = do
   (cs', w') <- case wj of
                  Tick dt t         -> do
                    js <- readIORef is
-                   let w' = handleInput (toList js) cs
-                        >>> updateWorld dt
-                        >>> if' (round (t / 5) /= round ((t - dt) / 5))
-                                addNeutral id
-                          $ w
+                   let w' = w & handleInput (toList js) cs
+                            >>> updateWorld dt
+                            >>> if' (round (t / 5) /= round ((t - dt) / 5))
+                                    addNeutral id
                    writeChan wo $ WorldUpdate (mkViewPorts cs w')
                    return (cs, w')
                  ClientMessage c m ->
